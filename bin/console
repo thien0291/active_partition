@@ -1,0 +1,35 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require "bundler/setup"
+require "active_partition"
+require "active_record"
+require "byebug"
+
+def reload!
+  files = $LOADED_FEATURES.select { |feat| feat =~ /\/active_partition\// }
+  files.each { |file| load file }
+end
+
+# You can add fixtures and/or initialization code here to make experimenting
+# with your gem easier. You can also use a different console, if you like.
+
+# (If you use this, don't forget to add pry to your Gemfile!)
+# require "pry"
+# Pry.start
+
+# Create test model
+class OutgoingEvent < ActiveRecord::Base
+  include ActivePartition::Partitionable
+  self.partitioned_by = "created_at"
+  self.partition_range = 1.day
+
+  # You can choose 1 of the following 2 options
+  self.retention_period = 1.month
+  self.retention_partition_count = 3
+end
+
+OutgoingEvent.establish_connection(ENV["DATABASE_URL"])
+
+require "irb"
+IRB.start(__FILE__)
