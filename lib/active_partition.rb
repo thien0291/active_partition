@@ -14,7 +14,11 @@ module ActivePartition
     extend ActiveSupport::Concern
 
     included do
-      before_create :create_partition_if_needed
+      # when partitioned column change, create partition if needed
+      before_save :create_partition_if_needed, if: -> {
+        self.class.partitioned_by &&
+        attribute_changed?(self.class.partitioned_by.to_s)
+      }
 
       def create_partition_if_needed
         # get partitioned attribute value

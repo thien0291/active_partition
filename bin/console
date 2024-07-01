@@ -21,6 +21,7 @@ end
 # Create test model
 class OutgoingEvent < ActiveRecord::Base
   include ActivePartition::Partitionable
+  self.primary_key = "id"
   self.partitioned_by = "created_at"
   self.partition_range = 1.day
 
