@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    active_partition (0.1.0)
+    active_partition (0.2.0)
       rails
       range_operators (~> 0.1.1)
       rspec-rails

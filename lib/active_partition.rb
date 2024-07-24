@@ -15,12 +15,17 @@ module ActivePartition
 
     included do
       # when partitioned column change, create partition if needed
-      before_save :create_partition_if_needed, if: -> {
-        self.class.partitioned_by &&
-        attribute_changed?(self.class.partitioned_by.to_s)
-      }
+      # before_validation will be called with create, update, save, and create! methods
+      before_validation :create_partition_if_needed
 
       def create_partition_if_needed
+        if ["created_at", "updated_at"].include?(self.class.partitioned_by.to_s) && self.attributes[self.class.partitioned_by].nil?
+          # set default value if created_at or updated_at is nil
+          self.assign_attributes(self.class.partitioned_by => Time.current.utc)
+        end
+
+        return unless self.class.partitioned_by && attribute_changed?(self.class.partitioned_by.to_s)
+
         # get partitioned attribute value
         partitioned_value = attributes[self.class.partitioned_by.to_s]
         self.class.prepare_partition(partitioned_value, self.class.partition_range)
@@ -61,11 +66,11 @@ module ActivePartition
         end
       end
 
-      delegate :premake, :latest_partition_coverage_time, to: :partition_manager
-      delegate :retain, :retain_by_time, :retain_by_partition_count, to: :partition_manager
-      delegate :prepare_partition, "active_partitions_cover?", to: :partition_manager
-      delegate :get_all_supported_partition_tables, to: :partition_adapter
-      delegate :drop_partition, to: :partition_adapter
+      # delegate :premake, :latest_partition_coverage_time, to: :partition_manager
+      # delegate :retain, :retain_by_time, :retain_by_partition_count, to: :partition_manager
+      # delegate :prepare_partition, "active_partitions_cover?", to: :partition_manager
+      # delegate :get_all_supported_partition_tables, to: :partition_adapter
+      # delegate :drop_partition, to: :partition_adapter
     end
   end
 end
