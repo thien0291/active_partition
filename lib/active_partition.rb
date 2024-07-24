@@ -66,11 +66,11 @@ module ActivePartition
         end
       end
 
-      # delegate :premake, :latest_partition_coverage_time, to: :partition_manager
-      # delegate :retain, :retain_by_time, :retain_by_partition_count, to: :partition_manager
-      # delegate :prepare_partition, "active_partitions_cover?", to: :partition_manager
-      # delegate :get_all_supported_partition_tables, to: :partition_adapter
-      # delegate :drop_partition, to: :partition_adapter
+      delegate :premake, :latest_partition_coverage_time, to: :partition_manager
+      delegate :retain, :retain_by_time, :retain_by_partition_count, to: :partition_manager
+      delegate :prepare_partition, "active_partitions_cover?", to: :partition_manager
+      delegate :get_all_supported_partition_tables, to: :partition_adapter
+      delegate :drop_partition, to: :partition_adapter
     end
   end
 end
