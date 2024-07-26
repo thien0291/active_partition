@@ -30,7 +30,31 @@ class OutgoingEvent < ActiveRecord::Base
   self.retention_partition_count = 3
 end
 
+class OutgoingEventsWebhook < ActiveRecord::Base
+  include ActivePartition::Partitionable
+  self.primary_key = "id"
+  self.partitioned_by = "created_at"
+  self.partition_range = 1.hour
+
+  # You can choose 1 of the following 2 options
+  self.retention_period = 1.day
+  self.retention_partition_count = 3
+end
+
 OutgoingEvent.establish_connection(ENV["DATABASE_URL"])
+OutgoingEventsWebhook.establish_connection(ENV["DATABASE_URL"])
+
+if OutgoingEventsWebhook.partition_adapter == OutgoingEvent.partition_adapter
+  puts "Violate the partition adapter constraint", OutgoingEventsWebhook.partition_adapter == OutgoingEvent.partition_adapter
+  puts OutgoingEventsWebhook.partition_adapter
+  puts OutgoingEvent.partition_adapter
+end
+
+if OutgoingEventsWebhook.partition_manager == OutgoingEvent.partition_manager
+  puts "Violate the partition manager constraint"
+  puts OutgoingEventsWebhook.partition_manager
+  puts OutgoingEvent.partition_manager
+end
 
 require "irb"
 IRB.start(__FILE__)
