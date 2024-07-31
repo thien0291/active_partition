@@ -2,9 +2,10 @@
 
 module ActivePartition::PartitionManagers
   class TimeRange
-    def initialize(partition_adapter, table_name)
+    def initialize(partition_adapter, table_name, partition_start_from = nil)
       @partition_adapter = partition_adapter
       @table_name = table_name
+      @partition_start_from = partition_start_from
     end
 
     # Retrieves the active ranges from the partition adapter.
@@ -128,7 +129,7 @@ module ActivePartition::PartitionManagers
     def latest_partition_coverage_time
       partition_tables = @partition_adapter.get_all_supported_partition_tables
       reload_active_ranges(partition_tables)
-      return Time.current.beginning_of_hour.utc if partition_tables.empty?
+      return (@partition_start_from || Time.current.beginning_of_hour.utc) if partition_tables.empty?
 
       latest_partition_table = partition_tables.sort_by { |p_name| p_name.split("_").last.to_i }.last
       @latest_coverage_at = Time.at(latest_partition_table.split("_").last.to_i).utc

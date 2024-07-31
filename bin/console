@@ -5,7 +5,7 @@ require "bundler/setup"
 require "active_partition"
 require "active_record"
 require "byebug"
-
+require "rails"
 def reload!
   files = $LOADED_FEATURES.select { |feat| feat =~ /\/active_partition\// }
   files.each { |file| load file }
@@ -35,6 +35,7 @@ class OutgoingEventsWebhook < ActiveRecord::Base
   self.primary_key = "id"
   self.partitioned_by = "created_at"
   self.partition_range = 1.hour
+  self.partition_start_from = DateTime.new(2021, 1, 1)
 
   # You can choose 1 of the following 2 options
   self.retention_period = 1.day

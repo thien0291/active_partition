@@ -40,9 +40,9 @@ module ActivePartition
         def partition_manager
           @partition_manager ||= case columns_hash[partitioned_by.to_s].type.to_s
                                  when "datetime"
-                                   ActivePartition::PartitionManagers::TimeRange.new(partition_adapter, table_name)
+                                   ActivePartition::PartitionManagers::TimeRange.new(partition_adapter, table_name, partition_start_from)
                                  else
-                                   ActivePartition::PartitionManagers::TimeRange.new(partition_adapter, table_name)
+                                   ActivePartition::PartitionManagers::TimeRange.new(partition_adapter, table_name, partition_start_from)
           end
         end
 
@@ -56,6 +56,8 @@ module ActivePartition
         attr_accessor :retention_period
         # Retains the specified number of partitions [Choose one of retention_period or retention_partition_count]
         attr_accessor :retention_partition_count
+        # The start time of the partition range, default is Time.current
+        attr_accessor :partition_start_from
 
         def delete_expired_partitions
           if retention_period && retention_period.is_a?(ActiveSupport::Duration)

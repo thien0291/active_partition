@@ -38,6 +38,13 @@ class Event < ActiveRecord::Base
   self.retention_period = 1.month
   # Keep last n partitions
   self.retention_partition_count = 3
+  # The start time of the partition range, default is Time.current.beginning_of_hour.utc
+  # For example, if today is July 31, and you create a new record.
+  # if the partition_start_from is 2021-01-01, the new partition should cover [2024-07-01 00:00:00 UTC...2024-08-01 00:00:00 UTC]
+  # if the partition_start_from is nil, the coverage can be [2024-07-31 08:00:00 UTC...2024-08-31 08:00:00 UTC]
+  # This configuration help us to sync partition ranges of all partitioned tables.
+  # Therefore, you can easy to join/drop/manage related partitioned tables.
+  self.partition_start_from = DateTime.new(2021, 1, 1)
 end
 
 # auto create a new partition if needed.
