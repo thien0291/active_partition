@@ -16,6 +16,9 @@ module ActivePartition::PartitionManagers
     #
     # @return [Array] The array of active ranges.
     def active_ranges
+      # in test environment, the partition table is not actually created. Therefore, return empty array
+      return [] if defined?(Rails) && Rails.env.test?
+
       @active_ranges ||= reload_active_ranges(@partition_adapter.get_all_supported_partition_tables)
     end
 
