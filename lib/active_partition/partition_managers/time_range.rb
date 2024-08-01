@@ -62,11 +62,18 @@ module ActivePartition::PartitionManagers
     def prepare_partition(partitioned_value, period)
       return if active_partitions_cover?(partitioned_value)
 
-      diff = (partitioned_value.utc - latest_coverage_at) / period
-      from_time = latest_coverage_at + (diff.floor * period)
-      to_time = from_time + period
+      # when the latest_coverage_at is too far, the diff can be wrong (because leap years add up to the diff)
+      # therefore, we need to calculate the diff based on the period
+      # diff = (partitioned_value.utc - latest_coverage_at) / period
+      # from_time = latest_coverage_at + (diff.floor * period)
+      # to_time = from_time + period
 
-      create_partition(from_time, to_time)
+      from_time = latest_coverage_at
+      while !(from_time..(from_time + period)).cover?(partitioned_value) do
+        from_time += period * (partitioned_value > from_time ? 1 : -1)
+      end
+
+      create_partition(from_time, from_time + period)
     end
 
     # Builds a partition name based on the given time range.
@@ -132,7 +139,7 @@ module ActivePartition::PartitionManagers
     def latest_partition_coverage_time
       partition_tables = @partition_adapter.get_all_supported_partition_tables
       reload_active_ranges(partition_tables)
-      return (@partition_start_from || Time.current.beginning_of_hour.utc) if partition_tables.empty?
+      return (@partition_start_from || Time.current.beginning_of_hour).utc if partition_tables.empty?
 
       latest_partition_table = partition_tables.sort_by { |p_name| p_name.split("_").last.to_i }.last
       @latest_coverage_at = Time.at(latest_partition_table.split("_").last.to_i).utc
